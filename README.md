@@ -17,7 +17,7 @@ A lightweight PowerShell toolkit to audit and harden Windows 10/11 privacy setti
 **One command. Full privacy.**
 
 ```powershell
-iwr "https://github.com/NX1X/Windows-Privacy-Toolkit/archive/refs/heads/main.zip" -OutFile "$env:TEMP\wpt.zip"; Expand-Archive "$env:TEMP\wpt.zip" "$env:TEMP\wpt" -Force; & "$env:TEMP\wpt\Windows-Privacy-Toolkit-main\Install.ps1"
+iwr "https://raw.githubusercontent.com/NX1X/Windows-Privacy-Toolkit/main/Quick-Install.ps1" | iex
 ```
 
 Or download manually and run:
@@ -25,7 +25,7 @@ Or download manually and run:
 .\Install.ps1
 ```
 
-> **Note:** Run in PowerShell. The script will automatically request admin privileges.
+> **Note:** Run in PowerShell. The script will automatically request admin privileges and download all necessary files.
 
 Disables Windows telemetry, Recall AI, Copilot, Office tracking, and more. Tested on Windows 11. Should work on Windows 10 (not tested).
 
