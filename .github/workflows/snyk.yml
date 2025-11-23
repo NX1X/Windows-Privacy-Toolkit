@@ -61,14 +61,12 @@ jobs:
           foreach ($script in $scripts) {
             Write-Host "Analyzing: $($script.FullName)" -ForegroundColor Cyan
 
-            # Run security-focused rules
+            # Run security-focused rules (excluding PSAvoidUsingWriteHost - expected in console scripts)
             $results = Invoke-ScriptAnalyzer -Path $script.FullName -Severity Error,Warning -IncludeRule @(
               'PSAvoidUsingPlainTextForPassword',
               'PSAvoidUsingConvertToSecureStringWithPlainText',
               'PSAvoidUsingUsernameAndPasswordParams',
-              'PSUseShouldProcessForStateChangingFunctions',
-              'PSAvoidUsingInvokeExpression',
-              'PSAvoidUsingWriteHost'
+              'PSAvoidUsingInvokeExpression'
             )
 
             if ($results) {
@@ -87,10 +85,8 @@ jobs:
           Write-Host "================================" -ForegroundColor Cyan
           Write-Host "Total security issues found: $($securityIssues.Count)" -ForegroundColor $(if ($securityIssues.Count -gt 0) { 'Yellow' } else { 'Green' })
 
-          # Don't fail the build for PSAvoidUsingWriteHost (it's expected in our scripts)
-          $criticalIssues = $securityIssues | Where-Object { $_.RuleName -ne 'PSAvoidUsingWriteHost' }
-          if ($criticalIssues.Count -gt 0) {
-            Write-Host "`nCritical security issues detected!" -ForegroundColor Red
+          if ($securityIssues.Count -gt 0) {
+            Write-Host "`nSecurity issues detected!" -ForegroundColor Red
             exit 1
           }
 

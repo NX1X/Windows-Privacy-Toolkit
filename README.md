@@ -17,7 +17,7 @@ A lightweight PowerShell toolkit to audit and harden Windows 10/11 privacy setti
 **One command. Full privacy.**
 
 ```powershell
-iwr "https://github.com/NX1X/Windows-Privacy-Toolkit/releases/latest/download/Windows-Privacy-Toolkit.zip" -OutFile "$env:TEMP\wpt.zip"; Expand-Archive "$env:TEMP\wpt.zip" "$env:TEMP\wpt" -Force; & "$env:TEMP\wpt\Install.ps1"
+iwr "https://github.com/NX1X/Windows-Privacy-Toolkit/archive/refs/heads/main.zip" -OutFile "$env:TEMP\wpt.zip"; Expand-Archive "$env:TEMP\wpt.zip" "$env:TEMP\wpt" -Force; & "$env:TEMP\wpt\Windows-Privacy-Toolkit-main\Install.ps1"
 ```
 
 Or download manually and run:
