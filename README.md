@@ -245,18 +245,6 @@ Register-ScheduledTask -TaskName "Privacy Audit" -Trigger (New-ScheduledTaskTrig
 
 ---
 
-## 🤝 Contributing
-
-Found a bug? Want to add more privacy checks?
-
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/NewPrivacyCheck`)
-3. Commit your changes (`git commit -m 'Add new privacy check'`)
-4. Push to the branch (`git push origin feature/NewPrivacyCheck`)
-5. Open a Pull Request
-
----
-
 ## 📜 License
 
 **MIT License** - Free for personal and commercial use.
@@ -297,13 +285,5 @@ These scripts modify Windows registry settings and system configurations.
 - ✅ **Understand the changes being made**
 
 The author is not responsible for any issues arising from the use of these scripts. If you encounter problems, use System Restore to revert changes.
-
----
-
-## 🌟 Star This Repo
-
-If this toolkit helped you, give it a ⭐ on GitHub!
-
----
 
 **Privacy is a right, not a privilege. Take it back.** 🛡️
