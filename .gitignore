@@ -1,0 +1,44 @@
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+Thumbs.db
+ehthumbs.db
+
+# Logs & Output Files
+*.log
+Privacy-Toolkit-Report_*.txt
+audit-results-*.txt
+privacy-report-*.html
+
+# Sensitive Data
+*password*
+*secret*
+*credential*
+*token*
+*.key
+*.pem
+*.pfx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# System files
+.DS_Store
+
+# Test/Debug files
+test-*.ps1
+debug-*.ps1
+scratch.ps1
+
+# User-specific files (don't commit personal audit results)
+my-audit.ps1
+personal-*.ps1
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github\instructions\snyk_rules.instructions.md

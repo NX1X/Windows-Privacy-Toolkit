@@ -1,0 +1,150 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags like v1.0.0, v1.1.0, etc.
+
+jobs:
+  test:
+    name: Pre-release Tests
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate script syntax
+        shell: pwsh
+        run: |
+          $scripts = Get-ChildItem -Path . -Filter "*.ps1"
+          $hasErrors = $false
+
+          foreach ($script in $scripts) {
+            Write-Host "Checking: $($script.Name)" -ForegroundColor Cyan
+            try {
+              $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $script.FullName -Raw), [ref]$null)
+              Write-Host "  OK" -ForegroundColor Green
+            } catch {
+              Write-Host "  ERROR: $_" -ForegroundColor Red
+              $hasErrors = $true
+            }
+          }
+
+          if ($hasErrors) {
+            throw "One or more scripts have syntax errors"
+          }
+
+      - name: Verify all required files exist
+        shell: pwsh
+        run: |
+          $required = @(
+            "Install.ps1",
+            "Privacy-Audit.ps1",
+            "Disable-WindowsTelemetry.ps1",
+            "Disable-OfficeTelemetry.ps1",
+            "Disable-PowerShellTelemetry.ps1",
+            "README.md"
+          )
+
+          $missing = @()
+          foreach ($file in $required) {
+            if (!(Test-Path $file)) {
+              $missing += $file
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            throw "Missing required files: $($missing -join ', ')"
+          }
+
+          Write-Host "All required files present" -ForegroundColor Green
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: test
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Release ZIP
+        run: |
+          # Create a clean release package
+          mkdir -p release
+
+          # Copy only necessary files
+          cp Install.ps1 release/
+          cp Privacy-Audit.ps1 release/
+          cp Disable-WindowsTelemetry.ps1 release/
+          cp Disable-OfficeTelemetry.ps1 release/
+          cp Disable-PowerShellTelemetry.ps1 release/
+          cp README.md release/
+          cp LICENSE release/ 2>/dev/null || echo "No LICENSE file"
+
+          # Create zip from release directory
+          cd release
+          # Create versioned zip
+          zip -r ../Windows-Privacy-Toolkit-${{ github.ref_name }}.zip .
+          # Create non-versioned zip for "latest" URL
+          zip -r ../Windows-Privacy-Toolkit.zip .
+          cd ..
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          cat << 'EOF' > RELEASE_NOTES.md
+          ## What's Changed
+
+          Full privacy hardening toolkit for Windows 10/11
+
+          ### Features
+          - ✅ Windows telemetry hardening
+          - ✅ Microsoft Office telemetry hardening
+          - ✅ PowerShell telemetry opt-out
+          - ✅ Comprehensive privacy audit
+          - ✅ One-click installer with system restore point
+          - ✅ Auto-elevation for admin privileges
+
+          ### Installation
+
+          **Easy Method (Recommended):**
+          1. Download `Windows-Privacy-Toolkit-${{ github.ref_name }}.zip`
+          2. Extract to a folder
+          3. Double-click `Install.ps1` (will auto-request admin privileges)
+          4. Follow the prompts
+
+          **Manual Method:**
+          1. Extract files
+          2. Right-click PowerShell → Run as Administrator
+          3. Navigate to folder and run: `.\Install.ps1`
+
+          ### Compatibility
+          - ✅ **Windows 11** (tested)
+          - ⚠️ **Windows 10** (should work, not tested)
+
+          ### Resources
+          - 📚 [Documentation](https://docs.nx1xlab.dev)
+          - 📝 [Blog & Technical Guides](https://blog.nx1xlab.dev)
+          - 💻 [GitHub Repository](https://github.com/NX1X/Windows-Privacy-Toolkit)
+
+          ---
+          **Author:** NX1X | [nx1xlab.dev](https://www.nx1xlab.dev)
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            Windows-Privacy-Toolkit-${{ github.ref_name }}.zip
+            Windows-Privacy-Toolkit.zip
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,125 @@
+name: Snyk Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Monday at 9am UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  snyk:
+    name: Snyk Security Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/iac@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --report
+
+      - name: Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+        continue-on-error: true
+
+  powershell-security:
+    name: PowerShell Security Analysis
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run Security-focused PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Import-Module PSScriptAnalyzer
+
+          $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse
+          $securityIssues = @()
+
+          foreach ($script in $scripts) {
+            Write-Host "Analyzing: $($script.FullName)" -ForegroundColor Cyan
+
+            # Run security-focused rules
+            $results = Invoke-ScriptAnalyzer -Path $script.FullName -Severity Error,Warning -IncludeRule @(
+              'PSAvoidUsingPlainTextForPassword',
+              'PSAvoidUsingConvertToSecureStringWithPlainText',
+              'PSAvoidUsingUsernameAndPasswordParams',
+              'PSUseShouldProcessForStateChangingFunctions',
+              'PSAvoidUsingInvokeExpression',
+              'PSAvoidUsingWriteHost'
+            )
+
+            if ($results) {
+              $securityIssues += $results
+              foreach ($result in $results) {
+                Write-Host "  [$($result.Severity)] $($result.RuleName): $($result.Message)" -ForegroundColor Yellow
+                Write-Host "    Line $($result.Line): $($result.Extent.Text)" -ForegroundColor Gray
+              }
+            } else {
+              Write-Host "  No security issues found" -ForegroundColor Green
+            }
+          }
+
+          Write-Host "`n================================" -ForegroundColor Cyan
+          Write-Host "Security Analysis Complete" -ForegroundColor Cyan
+          Write-Host "================================" -ForegroundColor Cyan
+          Write-Host "Total security issues found: $($securityIssues.Count)" -ForegroundColor $(if ($securityIssues.Count -gt 0) { 'Yellow' } else { 'Green' })
+
+          # Don't fail the build for PSAvoidUsingWriteHost (it's expected in our scripts)
+          $criticalIssues = $securityIssues | Where-Object { $_.RuleName -ne 'PSAvoidUsingWriteHost' }
+          if ($criticalIssues.Count -gt 0) {
+            Write-Host "`nCritical security issues detected!" -ForegroundColor Red
+            exit 1
+          }
+
+      - name: Check for hardcoded secrets
+        shell: pwsh
+        run: |
+          $patterns = @(
+            'password\s*=\s*[''"][^''"]+'
+            'secret\s*=\s*[''"][^''"]+'
+            'api[_-]?key\s*=\s*[''"][^''"]+'
+            'token\s*=\s*[''"][^''"]+'
+          )
+
+          $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse
+          $foundSecrets = $false
+
+          foreach ($script in $scripts) {
+            $content = Get-Content $script.FullName -Raw
+            foreach ($pattern in $patterns) {
+              if ($content -match $pattern) {
+                Write-Host "Potential hardcoded secret found in: $($script.Name)" -ForegroundColor Red
+                $foundSecrets = $true
+              }
+            }
+          }
+
+          if ($foundSecrets) {
+            Write-Host "`nWarning: Potential hardcoded secrets detected!" -ForegroundColor Yellow
+            Write-Host "Please review and ensure no sensitive data is committed." -ForegroundColor Yellow
+          } else {
+            Write-Host "No hardcoded secrets detected." -ForegroundColor Green
+          }

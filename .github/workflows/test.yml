@@ -1,0 +1,187 @@
+name: Test PowerShell Scripts
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test Scripts
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify PowerShell version
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+          Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+
+      - name: Validate script syntax
+        shell: pwsh
+        run: |
+          $scripts = @(
+            "Install.ps1",
+            "Privacy-Audit.ps1",
+            "Disable-WindowsTelemetry.ps1",
+            "Disable-OfficeTelemetry.ps1",
+            "Disable-PowerShellTelemetry.ps1"
+          )
+
+          $hasErrors = $false
+
+          foreach ($script in $scripts) {
+            Write-Host "Checking syntax: $script" -ForegroundColor Cyan
+
+            if (!(Test-Path $script)) {
+              Write-Host "  ERROR: File not found: $script" -ForegroundColor Red
+              $hasErrors = $true
+              continue
+            }
+
+            try {
+              $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $script -Raw), [ref]$null)
+              Write-Host "  OK: Syntax valid" -ForegroundColor Green
+            } catch {
+              Write-Host "  ERROR: Syntax error in $script : $_" -ForegroundColor Red
+              $hasErrors = $true
+            }
+          }
+
+          if ($hasErrors) {
+            throw "One or more scripts have errors"
+          }
+
+      - name: Check for required functions
+        shell: pwsh
+        run: |
+          Write-Host "Checking Install.ps1 for required components..." -ForegroundColor Cyan
+
+          $content = Get-Content "Install.ps1" -Raw
+
+          $checks = @{
+            "Self-elevation" = "IsInRole.*Administrator"
+            "System restore point" = "Checkpoint-Computer"
+            "Confirmation prompt" = "Read-Host"
+          }
+
+          foreach ($check in $checks.GetEnumerator()) {
+            if ($content -match $check.Value) {
+              Write-Host "  OK: $($check.Key) found" -ForegroundColor Green
+            } else {
+              Write-Host "  WARNING: $($check.Key) not found" -ForegroundColor Yellow
+            }
+          }
+
+      - name: Verify hardening scripts exist
+        shell: pwsh
+        run: |
+          $requiredScripts = @(
+            "Disable-WindowsTelemetry.ps1",
+            "Disable-OfficeTelemetry.ps1",
+            "Disable-PowerShellTelemetry.ps1"
+          )
+
+          $missing = @()
+
+          foreach ($script in $requiredScripts) {
+            if (Test-Path $script) {
+              Write-Host "OK: $script exists" -ForegroundColor Green
+            } else {
+              Write-Host "MISSING: $script" -ForegroundColor Red
+              $missing += $script
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            throw "Missing required scripts: $($missing -join ', ')"
+          }
+
+      - name: Check for admin elevation in all scripts
+        shell: pwsh
+        run: |
+          $scripts = @(
+            "Install.ps1",
+            "Privacy-Audit.ps1",
+            "Disable-WindowsTelemetry.ps1",
+            "Disable-OfficeTelemetry.ps1",
+            "Disable-PowerShellTelemetry.ps1"
+          )
+
+          $hasElevation = $true
+
+          foreach ($script in $scripts) {
+            $content = Get-Content $script -Raw
+            if ($content -match "IsInRole.*Administrator") {
+              Write-Host "OK: $script has admin elevation" -ForegroundColor Green
+            } else {
+              Write-Host "WARNING: $script missing admin elevation" -ForegroundColor Yellow
+              $hasElevation = $false
+            }
+          }
+
+          if (!$hasElevation) {
+            Write-Host "Some scripts are missing admin elevation check" -ForegroundColor Yellow
+          }
+
+      - name: PSScriptAnalyzer lint check
+        shell: pwsh
+        run: |
+          # Install PSScriptAnalyzer if not available
+          if (!(Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+            Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          }
+
+          Import-Module PSScriptAnalyzer
+
+          $scripts = Get-ChildItem -Path . -Filter "*.ps1"
+          $totalIssues = 0
+
+          foreach ($script in $scripts) {
+            Write-Host "Analyzing: $($script.Name)" -ForegroundColor Cyan
+            $results = Invoke-ScriptAnalyzer -Path $script.FullName -Severity Error,Warning
+
+            if ($results) {
+              foreach ($result in $results) {
+                $color = if ($result.Severity -eq 'Error') { 'Red' } else { 'Yellow' }
+                Write-Host "  [$($result.Severity)] Line $($result.Line): $($result.Message)" -ForegroundColor $color
+                $totalIssues++
+              }
+            } else {
+              Write-Host "  No issues found" -ForegroundColor Green
+            }
+          }
+
+          Write-Host "`nTotal issues: $totalIssues" -ForegroundColor $(if ($totalIssues -gt 0) { 'Yellow' } else { 'Green' })
+
+          # Don't fail on warnings, only on errors
+          $errors = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error
+          if ($errors) {
+            throw "PSScriptAnalyzer found $($errors.Count) errors"
+          }
+
+  version-check:
+    name: Version Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README links
+        run: |
+          echo "Checking README.md for broken internal links..."
+
+          # Check that all referenced scripts exist
+          for script in Install.ps1 Privacy-Audit.ps1 Disable-WindowsTelemetry.ps1 Disable-OfficeTelemetry.ps1 Disable-PowerShellTelemetry.ps1; do
+            if [ -f "$script" ]; then
+              echo "OK: $script exists"
+            else
+              echo "ERROR: $script not found"
+              exit 1
+            fi
+          done
