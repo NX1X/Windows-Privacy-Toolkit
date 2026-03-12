@@ -17,6 +17,7 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -44,11 +45,28 @@ jobs:
 
           Set-Content "Quick-Install.ps1" -Value $content -NoNewline
 
-      - name: Commit updated hashes
+      - name: Open PR with updated hashes
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Quick-Install.ps1
-          git diff --staged --quiet || git commit -m "chore: update script hashes [skip ci]"
-          git push
+
+          # Nothing changed — exit cleanly
+          if git diff --staged --quiet; then
+            echo "Hashes already up to date, nothing to do."
+            exit 0
+          fi
+
+          BRANCH="chore/update-hashes-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          git commit -m "chore: update script hashes"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "chore: update script hashes" \
+            --body "Automated hash update after a script changed on \`main\`. Merge when ready." \
+            --base main \
+            --head "$BRANCH"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
