@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - 'v*' # Trigger on version tags like v1.0.0, v1.1.0, etc.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.1.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -73,12 +84,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Set release version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Release ZIP
         run: |
-          # Create a clean release package
+          TAG="${{ steps.version.outputs.tag }}"
           mkdir -p release
 
-          # Copy only necessary files
           cp Install.ps1 release/
           cp Privacy-Audit.ps1 release/
           cp Disable-WindowsTelemetry.ps1 release/
@@ -87,21 +106,17 @@ jobs:
           cp README.md release/
           cp LICENSE release/ 2>/dev/null || echo "No LICENSE file"
 
-          # Create zip from release directory
           cd release
-          # Create versioned zip
-          zip -r ../Windows-Privacy-Toolkit-${{ github.ref_name }}.zip .
-          # Create non-versioned zip for "latest" URL
+          zip -r ../Windows-Privacy-Toolkit-${TAG}.zip .
           zip -r ../Windows-Privacy-Toolkit.zip .
           cd ..
 
       - name: Generate Release Notes from CHANGELOG
         id: changelog
         run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"  # strip leading 'v'
+          TAG="${{ steps.version.outputs.tag }}"
+          VERSION="${TAG#v}"  # strip leading 'v'
 
-          # Extract the section for this version from CHANGELOG.md
           CHANGES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## /{exit} found{print}" CHANGELOG.md)
 
           if [ -z "$CHANGES" ]; then
@@ -109,7 +124,7 @@ jobs:
           fi
 
           cat << EOF > RELEASE_NOTES.md
-          ## What's New in ${{ github.ref_name }}
+          ## What's New in ${TAG}
 
           $CHANGES
 
@@ -123,7 +138,7 @@ jobs:
           \`\`\`
 
           **Manual Install:**
-          1. Download \`Windows-Privacy-Toolkit-${{ github.ref_name }}.zip\`
+          1. Download \`Windows-Privacy-Toolkit-${TAG}.zip\`
           2. Extract to a folder
           3. Right-click \`Install.ps1\` → Run with PowerShell (admin)
 
@@ -143,12 +158,13 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
+          tag_name: ${{ steps.version.outputs.tag }}
           files: |
-            Windows-Privacy-Toolkit-${{ github.ref_name }}.zip
+            Windows-Privacy-Toolkit-${{ steps.version.outputs.tag }}.zip
             Windows-Privacy-Toolkit.zip
           body_path: RELEASE_NOTES.md
           draft: false
-          prerelease: false
+          prerelease: ${{ inputs.prerelease == true }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
