@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Validate script syntax
         shell: pwsh
@@ -44,7 +44,8 @@ jobs:
             "Disable-WindowsTelemetry.ps1",
             "Disable-OfficeTelemetry.ps1",
             "Disable-PowerShellTelemetry.ps1",
-            "README.md"
+            "README.md",
+            "CHANGELOG.md"
           )
 
           $missing = @()
@@ -70,7 +71,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Create Release ZIP
         run: |
@@ -94,42 +95,45 @@ jobs:
           zip -r ../Windows-Privacy-Toolkit.zip .
           cd ..
 
-      - name: Generate Changelog
+      - name: Generate Release Notes from CHANGELOG
         id: changelog
         run: |
-          cat << 'EOF' > RELEASE_NOTES.md
-          ## What's Changed
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # strip leading 'v'
 
-          Full privacy hardening toolkit for Windows 10/11
+          # Extract the section for this version from CHANGELOG.md
+          CHANGES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## /{exit} found{print}" CHANGELOG.md)
 
-          ### Features
-          - ✅ Windows telemetry hardening
-          - ✅ Microsoft Office telemetry hardening
-          - ✅ PowerShell telemetry opt-out
-          - ✅ Comprehensive privacy audit
-          - ✅ One-click installer with system restore point
-          - ✅ Auto-elevation for admin privileges
+          if [ -z "$CHANGES" ]; then
+            CHANGES="See [CHANGELOG.md](https://github.com/NX1X/Windows-Privacy-Toolkit/blob/main/CHANGELOG.md) for details."
+          fi
 
-          ### Installation
+          cat << EOF > RELEASE_NOTES.md
+          ## What's New in ${{ github.ref_name }}
 
-          **Easy Method (Recommended):**
-          1. Download `Windows-Privacy-Toolkit-${{ github.ref_name }}.zip`
+          $CHANGES
+
+          ---
+
+          ## Installation
+
+          **Quick Install (Recommended):**
+          \`\`\`powershell
+          irm https://raw.githubusercontent.com/NX1X/Windows-Privacy-Toolkit/main/Quick-Install.ps1 | iex
+          \`\`\`
+
+          **Manual Install:**
+          1. Download \`Windows-Privacy-Toolkit-${{ github.ref_name }}.zip\`
           2. Extract to a folder
-          3. Double-click `Install.ps1` (will auto-request admin privileges)
-          4. Follow the prompts
+          3. Right-click \`Install.ps1\` → Run with PowerShell (admin)
 
-          **Manual Method:**
-          1. Extract files
-          2. Right-click PowerShell → Run as Administrator
-          3. Navigate to folder and run: `.\Install.ps1`
-
-          ### Compatibility
+          ## Compatibility
           - ✅ **Windows 11** (tested)
           - ⚠️ **Windows 10** (should work, not tested)
 
-          ### Resources
+          ## Resources
+          - 📋 [Full Changelog](https://github.com/NX1X/Windows-Privacy-Toolkit/blob/main/CHANGELOG.md)
           - 📚 [Documentation](https://docs.nx1xlab.dev)
-          - 📝 [Blog & Technical Guides](https://blog.nx1xlab.dev)
           - 💻 [GitHub Repository](https://github.com/NX1X/Windows-Privacy-Toolkit)
 
           ---
@@ -137,7 +141,7 @@ jobs:
           EOF
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           files: |
             Windows-Privacy-Toolkit-${{ github.ref_name }}.zip
