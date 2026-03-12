@@ -21,7 +21,9 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     }
     try {
         $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Definition }
-        Start-Process PowerShell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"Set-Location -LiteralPath '$((Get-Item $scriptPath).DirectoryName)'; & '$scriptPath'`""
+        $escapedDir = (Split-Path $scriptPath -Parent).Replace("'", "''")
+        $escapedPath = $scriptPath.Replace("'", "''")
+        Start-Process PowerShell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"Set-Location -LiteralPath '$escapedDir'; & '$escapedPath'`""
         exit 0
     } catch {
         Write-Error "Failed to elevate to Administrator. Please run this script as Administrator."
@@ -36,7 +38,7 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 Write-Host "`n=== POWERSHELL PRIVACY HARDENING ===" -ForegroundColor Cyan
 Write-Host "Author: NX1X | www.nx1xlab.dev/nxtools`n" -ForegroundColor Gray
 
-Write-Host "[1/1] Disabling PowerShell Telemetry..." -ForegroundColor Yellow
+Write-Host "[1/4] Disabling PowerShell Telemetry..." -ForegroundColor Yellow
 
 # Set system-wide environment variable to opt-out of PowerShell telemetry
 [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'Machine')
@@ -51,8 +53,41 @@ if ($telemetryStatus -eq '1') {
     exit 1
 }
 
-Write-Host "`n=== POWERSHELL HARDENING COMPLETE ===" -ForegroundColor Cyan
-Write-Host "`n[OK] PowerShell privacy settings configured!" -ForegroundColor Green
+Write-Host "`n[2/4] Disabling VS Code Telemetry..." -ForegroundColor Yellow
+
+[System.Environment]::SetEnvironmentVariable('VSCODE_TELEMETRY_OPTOUT', '1', 'Machine')
+
+$vscodeStatus = [System.Environment]::GetEnvironmentVariable('VSCODE_TELEMETRY_OPTOUT', 'Machine')
+if ($vscodeStatus -eq '1') {
+    Write-Host "  [OK] VS Code telemetry disabled" -ForegroundColor Green
+} else {
+    Write-Host "  [WARN] VS Code telemetry opt-out may not have been set" -ForegroundColor Yellow
+}
+
+Write-Host "`n[3/4] Disabling .NET Core Telemetry..." -ForegroundColor Yellow
+
+[System.Environment]::SetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', '1', 'Machine')
+
+$dotnetStatus = [System.Environment]::GetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', 'Machine')
+if ($dotnetStatus -eq '1') {
+    Write-Host "  [OK] .NET Core telemetry disabled" -ForegroundColor Green
+} else {
+    Write-Host "  [WARN] .NET Core telemetry opt-out may not have been set" -ForegroundColor Yellow
+}
+
+Write-Host "`n[4/4] Disabling Windows Terminal Telemetry..." -ForegroundColor Yellow
+
+[System.Environment]::SetEnvironmentVariable('WT_DISABLE_TELEMETRY', '1', 'Machine')
+
+$wtStatus = [System.Environment]::GetEnvironmentVariable('WT_DISABLE_TELEMETRY', 'Machine')
+if ($wtStatus -eq '1') {
+    Write-Host "  [OK] Windows Terminal telemetry disabled" -ForegroundColor Green
+} else {
+    Write-Host "  [WARN] Windows Terminal telemetry opt-out may not have been set" -ForegroundColor Yellow
+}
+
+Write-Host "`n=== POWERSHELL & DEVELOPER TOOLS HARDENING COMPLETE ===" -ForegroundColor Cyan
+Write-Host "`n[OK] Developer tool privacy settings configured!" -ForegroundColor Green
 Write-Host "`nRun Privacy-Audit.ps1 to verify changes" -ForegroundColor Gray
 Write-Host "Restart PowerShell for changes to take effect" -ForegroundColor Gray
 Write-Host "`nMore info: https://github.com/NX1X/Windows-Privacy-Toolkit" -ForegroundColor DarkGray

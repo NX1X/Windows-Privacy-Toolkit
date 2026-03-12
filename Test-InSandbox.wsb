@@ -1,0 +1,18 @@
+<Configuration>
+  <MappedFolders>
+    <!--
+      Maps your local toolkit folder into the Sandbox as read-only.
+      The sandbox test script copies it to a writable location before running.
+      Adjust the HostFolder path if your repo is elsewhere.
+    -->
+    <MappedFolder>
+      <HostFolder>f:\tech-projects\Windows-Privacy-Toolkit-project\Windows-Privacy-Toolkit</HostFolder>
+      <SandboxFolder>C:\TestKit-ReadOnly</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+
+  <LogonCommand>
+    <Command>powershell -NoProfile -ExecutionPolicy Bypass -File "C:\TestKit-ReadOnly\tests\Invoke-SandboxTest.ps1"</Command>
+  </LogonCommand>
+</Configuration>
