@@ -80,11 +80,11 @@ if (-not $downloadSuccess) {
 #   Get-FileHash Install.ps1,Privacy-Audit.ps1,Disable-WindowsTelemetry.ps1,Disable-OfficeTelemetry.ps1,Disable-PowerShellTelemetry.ps1 -Algorithm SHA256 | Select Hash,Path
 # Then replace the values below with the new output (uppercase hex).
 $expectedHashes = @{
-    "Install.ps1"                    = "521A3E6E80778718CB02F14857B433DF248CF6C9341F3E5EF348E4D63A498158"
-    "Privacy-Audit.ps1"              = "1D48BDF2358AE52901AE3B3935C0E2F2A02F36BC20C4678301A8256F10E9FC64"
-    "Disable-WindowsTelemetry.ps1"   = "E4F1A0CF6BDF19BFDF2F8665F8CCB49C981BA7E6974813EAE3B4740FC4D3CB89"
-    "Disable-OfficeTelemetry.ps1"    = "3D07885E2B0361AF8FC71689E3CB79914FD72E42FAFC22CAF3479C0338E494A4"
-    "Disable-PowerShellTelemetry.ps1"= "835AEDD647A6C578A13142C9192F20AED87651DB877203AB92C5F1B26B340E92"
+    "Install.ps1"                    = "11A44068098FEE0FC09BA26ED17AF4223CFE3F5E95486EA717BD9B4099865FC4"
+    "Privacy-Audit.ps1"              = "6A9E8090A73A1A1FA8A8FA5328A348C5423714C4408F1E6F30976CC1BDF68419"
+    "Disable-WindowsTelemetry.ps1"   = "10BDC1A5267234C31C32CDB9A68FD8A63A7C7B7860FBFC6B87C9CE5B9FA26224"
+    "Disable-OfficeTelemetry.ps1"    = "5FED409A7EFF9C0241F52D7FDFA8048BA92F3DB1EAF03456B28002ADD422504D"
+    "Disable-PowerShellTelemetry.ps1"= "CA42DDF8855BE55ED3C1BD45B353C755119406197E72375261AA20F5EE1C99A8"
 }
 
 Write-Host "`nVerifying script integrity..." -ForegroundColor Yellow
