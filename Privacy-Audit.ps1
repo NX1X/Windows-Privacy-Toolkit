@@ -1,7 +1,7 @@
 # Windows Privacy Audit Script
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Comprehensive audit of Windows 10/11 privacy settings with report generation
 #
 # ⚠️ INFO: This is a READ-ONLY audit script

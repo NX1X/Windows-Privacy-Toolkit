@@ -1,7 +1,7 @@
 # Windows Privacy Toolkit - One-Click Installer
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Automated installer that runs all privacy hardening scripts with detailed reporting
 #
 # ⚠️ DISCLAIMER: USE AT YOUR OWN RISK

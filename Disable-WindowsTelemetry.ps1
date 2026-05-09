@@ -1,7 +1,7 @@
 # Windows Telemetry Hardening Script
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Disable Windows 10/11 telemetry, tracking, and privacy-invasive features
 #
 # ⚠️ DISCLAIMER: USE AT YOUR OWN RISK

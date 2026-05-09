@@ -1,7 +1,7 @@
 # Advanced Telemetry Hardening Script (OPTIONAL)
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Advanced privacy hardening with scheduled tasks, hosts file, and firewall blocking
 #
 # ⚠️ DISCLAIMER: USE AT YOUR OWN RISK
