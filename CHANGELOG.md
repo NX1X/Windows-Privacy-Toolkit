@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2026-05-09
 
 ### Changed
-- License changed from MIT to Apache License 2.0
+- License changed from MIT to Apache License 2.0 (applies retroactively to all versions)
 
 ### Security
 - Added top-level `permissions` to all GitHub Actions workflows (CodeQL alerts #1-#4)
