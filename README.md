@@ -4,7 +4,7 @@
 
 A lightweight PowerShell toolkit to audit and harden Windows 10/11 privacy settings. No bloat. Just scripts that work.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](https://www.microsoft.com/windows)
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=NX1X.Windows-Privacy-Toolkit)
 
@@ -309,7 +309,7 @@ Register-ScheduledTask -TaskName "Privacy Audit" -Trigger (New-ScheduledTaskTrig
 
 ## 📜 License
 
-**MIT License** - Free for personal and commercial use.
+**Apache License 2.0** - Free for personal and commercial use.
 
 **If you modify this code, please give credit to the original author.**
 

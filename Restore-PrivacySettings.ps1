@@ -1,7 +1,7 @@
 # Privacy Settings Restore Script
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Restores Windows privacy settings to default (pre-toolkit) state
 #
 # ⚠️ DISCLAIMER: USE AT YOUR OWN RISK

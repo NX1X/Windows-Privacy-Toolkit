@@ -1,7 +1,7 @@
 # Remove Microsoft 365 Bloatware Script
 # Author: NX1X (www.nx1xlab.dev)
 # Part of: NXTools (www.nx1xlab.dev/nxtools)
-# License: MIT License
+# License: Apache License 2.0
 # Description: Removes pre-installed Microsoft 365 (Office) bloatware from Windows 11
 #
 # ⚠️ DISCLAIMER: USE AT YOUR OWN RISK

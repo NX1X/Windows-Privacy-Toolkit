@@ -16,10 +16,15 @@ on:
         type: boolean
         default: false
 
+permissions: {}
+
 jobs:
   test:
     name: Pre-release Tests
     runs-on: windows-latest
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
