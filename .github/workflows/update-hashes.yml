@@ -10,6 +10,8 @@ on:
       - 'Disable-OfficeTelemetry.ps1'
       - 'Disable-PowerShellTelemetry.ps1'
 
+permissions: {}
+
 jobs:
   update-hashes:
     name: Recompute and Commit Hashes

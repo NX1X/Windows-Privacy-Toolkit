@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-05-09
+
+### Changed
+- License changed from MIT to Apache License 2.0
+
+### Security
+- Added top-level `permissions` to all GitHub Actions workflows (CodeQL alerts #1-#4)
+- Added `permissions: read` for test and security scan jobs that only need read access
+- Added `permissions: {}` (no permissions) as workflow default where jobs define their own scopes
+
+### Added
+- Dependabot configuration for automated GitHub Actions dependency updates
+
+---
+
 ## [1.1.0] - 2026-03-12
 
 ### Security
@@ -57,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Quick-Install.ps1` — one-liner remote installer for easy deployment
 - GitHub Actions CI: syntax validation, PSScriptAnalyzer, Snyk security scanning
 
-[Unreleased]: https://github.com/NX1X/Windows-Privacy-Toolkit/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/NX1X/Windows-Privacy-Toolkit/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/NX1X/Windows-Privacy-Toolkit/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/NX1X/Windows-Privacy-Toolkit/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/NX1X/Windows-Privacy-Toolkit/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NX1X/Windows-Privacy-Toolkit/releases/tag/v1.0.0

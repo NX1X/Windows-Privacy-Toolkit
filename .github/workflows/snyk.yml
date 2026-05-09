@@ -9,6 +9,8 @@ on:
     # Run weekly on Monday at 9am UTC
     - cron: '0 9 * * 1'
 
+permissions: {}
+
 jobs:
   snyk:
     name: Snyk Security Analysis
@@ -40,6 +42,9 @@ jobs:
   powershell-security:
     name: PowerShell Security Analysis
     runs-on: windows-latest
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
